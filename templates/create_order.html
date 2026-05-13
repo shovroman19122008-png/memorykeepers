@@ -1,0 +1,39 @@
+{% extends "baza.html" %}
+{% block title %}Создать заказ{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-6">
+        <h2 class="mb-4">Создать заказ</h2>
+        
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5>Мастер: {{ master.username }}</h5>
+                <p class="text-muted">{{ master.city }}</p>
+                {% if master.about %}
+                <p>{{ master.about[:200] }}...</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Опишите, что вы хотите заказать</label>
+                        <textarea name="description" id="description" 
+                                  class="form-control" rows="5" 
+                                  placeholder="Опишите вашу идею, пожелания, сроки..."
+                                  required></textarea>
+                        <small class="text-muted">Это сообщение увидит мастер и сможет на него ответить</small>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-warning btn-lg w-100">Создать заказ</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

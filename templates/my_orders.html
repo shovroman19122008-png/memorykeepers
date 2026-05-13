@@ -1,0 +1,88 @@
+{% extends "baza.html" %}
+{% block title %}Мои заказы{% endblock %}
+
+{% block body %}
+<div class="row mt-4">
+    <div class="col-12">
+        <h2 class="mb-4">Мои заказы</h2>
+        
+        <ul class="nav nav-tabs mb-4" id="ordersTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="customer-tab" data-bs-toggle="tab" 
+                        data-bs-target="#customer-orders" type="button" role="tab">
+                    Я заказываю ({{ customer_orders|length }})
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="master-tab" data-bs-toggle="tab" 
+                        data-bs-target="#master-orders" type="button" role="tab">
+                    Я выполняю ({{ master_orders|length }})
+                </button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="ordersTabContent">
+            <!-- Заказы, где я заказчик -->
+            <div class="tab-pane fade show active" id="customer-orders" role="tabpanel">
+                {% if customer_orders %}
+                <div class="list-group">
+                    {% for order in customer_orders %}
+                    <a href="{{ url_for('order_detail', order_id=order.id) }}" 
+                       class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">Заказ у мастера: {{ order.master.username }}</h5>
+                            <small>{{ order.created_at.strftime('%d.%m.%Y') }}</small>
+                        </div>
+                        <p class="mb-1">
+                            Статус: 
+                            {% if order.status == 'in_progress' %}
+                                <span class="badge bg-primary">В работе</span>
+                            {% elif order.status == 'completed' %}
+                                <span class="badge bg-success">Завершён</span>
+                            {% elif order.status == 'cancelled' %}
+                                <span class="badge bg-danger">Отменён</span>
+                            {% endif %}
+                        </p>
+                        <small>Сообщений: {{ order.messages|length }}</small>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">У вас пока нет заказов.</p>
+                <a href="{{ url_for('masters_list') }}" class="btn btn-warning">Найти мастера</a>
+                {% endif %}
+            </div>
+            
+            <!-- Заказы, где я мастер -->
+            <div class="tab-pane fade" id="master-orders" role="tabpanel">
+                {% if master_orders %}
+                <div class="list-group">
+                    {% for order in master_orders %}
+                    <a href="{{ url_for('order_detail', order_id=order.id) }}" 
+                       class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">Заказ от: {{ order.customer.username }}</h5>
+                            <small>{{ order.created_at.strftime('%d.%m.%Y') }}</small>
+                        </div>
+                        <p class="mb-1">
+                            Статус: 
+                            {% if order.status == 'in_progress' %}
+                                <span class="badge bg-primary">В работе</span>
+                            {% elif order.status == 'completed' %}
+                                <span class="badge bg-success">Завершён</span>
+                            {% elif order.status == 'cancelled' %}
+                                <span class="badge bg-danger">Отменён</span>
+                            {% endif %}
+                        </p>
+                        <small>Сообщений: {{ order.messages|length }}</small>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">У вас пока нет заказов на выполнение.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

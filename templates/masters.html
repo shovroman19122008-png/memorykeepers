@@ -1,0 +1,144 @@
+{% extends "baza.html" %}
+{% block title %}Поиск мастеров{% endblock %}
+
+{% block body %}
+<div class="row mt-4">
+    <!-- Боковая панель с фильтрами -->
+    <div class="col-md-3">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Фильтры</h5>
+                <form method="GET" action="{{ url_for('masters_list') }}">
+                    
+                    <!-- Поиск по слову -->
+                    <div class="mb-3">
+                        <label class="form-label">Поиск</label>
+                        <input type="text" name="query" class="form-control" 
+                               placeholder="Имя или описание..." 
+                               value="{{ current_query }}">
+                    </div>
+                    
+                    <!-- Категории -->
+                    <div class="mb-3">
+                        <label class="form-label">Категория услуг</label>
+                        <select name="category" class="form-select">
+                            <option value="">Все категории</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.id }}" 
+                                    {% if current_category == cat.id %}selected{% endif %}>
+                                {{ cat.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Город -->
+                    <div class="mb-3">
+                        <label class="form-label">Город</label>
+                        <input type="text" name="city" class="form-control" 
+                               list="cities-list" 
+                               placeholder="Введите город..." 
+                               value="{{ current_city }}">
+                        <datalist id="cities-list">
+                            {% for city in cities %}
+                            <option value="{{ city }}">
+                            {% endfor %}
+                        </datalist>
+                    </div>
+                    
+                    <!-- Сортировка -->
+                    <div class="mb-3">
+                        <label class="form-label">Сортировка</label>
+                        <select name="sort" class="form-select">
+                            <option value="rating" {% if current_sort == 'rating' %}selected{% endif %}>
+                                По рейтингу
+                            </option>
+                            <option value="new" {% if current_sort == 'new' %}selected{% endif %}>
+                                Сначала новые
+                            </option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-warning w-100">Применить</button>
+                    <a href="{{ url_for('masters_list') }}" class="btn btn-outline-secondary w-100 mt-2">
+                        Сбросить
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Список мастеров -->
+    <div class="col-md-9">
+        <h2 class="mb-4">
+            {% if current_category or current_city or current_query %}
+                Результаты поиска
+            {% else %}
+                Все мастера
+            {% endif %}
+            <small class="text-muted fs-6">({{ masters|length }})</small>
+        </h2>
+        
+        {% if masters %}
+        <div class="row">
+            {% for master in masters %}
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="ms-3">
+                                <h5 class="card-title mb-1">
+                                    <a href="{{ url_for('profile', user_id=master.id) }}" 
+                                       class="text-decoration-none">
+                                        {{ master.username }}
+                                    </a>
+                                </h5>
+                                <p class="text-muted mb-0">
+                                    <i class="bi bi-geo-alt"></i> {{ master.city or 'Город не указан' }}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Рейтинг -->
+                        <div class="mb-2">
+                            {% if master.rating > 0 %}
+                                <span class="text-warning">
+                                    {% for i in range(master.rating|int) %}★{% endfor %}
+                                    {% if master.rating % 1 >= 0.5 %}★{% endif %}
+                                </span>
+                                <span class="text-muted">{{ master.rating }}/5</span>
+                            {% else %}
+                                <span class="text-muted">Нет оценок</span>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Описание -->
+                        <p class="card-text">
+                            {{ master.about[:150] if master.about else 'Описание пока не добавлено...' }}
+                        </p>
+                        
+                        <!-- Категории -->
+                        <div class="mb-3">
+                            {% for mc in master.master_categories %}
+                            <span class="badge bg-secondary me-1">{{ mc.category.name }}</span>
+                            {% endfor %}
+                        </div>
+                        
+                        <a href="{{ url_for('profile', user_id=master.id) }}" 
+                           class="btn btn-warning">
+                            Подробнее
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <h4 class="text-muted">Мастера не найдены</h4>
+            <p>Попробуйте изменить параметры поиска</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

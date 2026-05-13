@@ -1,0 +1,115 @@
+{% extends "baza.html" %}
+{% block title %}{{ user.username }} - Профиль{% endblock %}
+
+{% block body %}
+<div class="row mt-4">
+    <div class="col-md-4">
+        <!-- Информация о пользователе -->
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+                <h3>{{ user.username }}</h3>
+                <p class="text-muted">
+                    {{ 'Мастер' if user.role == 'master' else 'Заказчик' }}
+                </p>
+                <p><i class="bi bi-geo-alt"></i> {{ user.city or 'Город не указан' }}</p>
+                
+                {% if user.role == 'master' %}
+                <div class="mb-3">
+                    <span class="text-warning h4">
+                        {% for i in range(user.rating|int) %}★{% endfor %}
+                        {% if user.rating % 1 >= 0.5 %}★{% endif %}
+                    </span>
+                    <span class="text-muted">({{ user.rating }}/5)</span>
+                </div>
+                {% endif %}
+                
+                {% if session.get('user_id') == user.id %}
+                    <a href="{{ url_for('edit_profile') }}" class="btn btn-outline-warning">
+                        Редактировать профиль
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if user.role == 'master' and categories %}
+        <div class="card shadow-sm mt-3">
+            <div class="card-body">
+                <h5>Услуги</h5>
+                {% for cat in categories %}
+                <span class="badge bg-secondary me-1 mb-1">{{ cat.name }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-8">
+        <!-- Описание -->
+        {% if user.about %}
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5>О себе</h5>
+                <p>{{ user.about }}</p>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Портфолио -->
+        {% if user.role == 'master' and portfolio %}
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5>Портфолио</h5>
+                <div class="row">
+                    {% for image in portfolio %}
+                    <div class="col-md-4 mb-3">
+                        <img src="{{ url_for('static', filename='uploads/' + image.filename) }}" 
+                             class="img-fluid rounded" alt="Работа">
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Кнопка создания заказа -->
+        {% if user.role == 'master' and session.get('user_id') and session.get('user_id') != user.id %}
+        <div class="mb-4">
+            {% if active_order %}
+                <a href="{{ url_for('order_detail', order_id=active_order.id) }}" 
+                   class="btn btn-success">
+                    Перейти к заказу
+                </a>
+            {% else %}
+                <a href="{{ url_for('create_order', master_id=user.id) }}" 
+                   class="btn btn-warning">
+                    Создать заказ
+                </a>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <!-- Отзывы -->
+        {% if reviews %}
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5>Отзывы ({{ reviews|length }})</h5>
+                {% for review in reviews %}
+                <div class="border-bottom mb-3 pb-3">
+                    <div class="d-flex justify-content-between">
+                        <strong>{{ review.reviewer_id }}</strong>
+                        <small class="text-muted">{{ review.created_at.strftime('%d.%m.%Y') }}</small>
+                    </div>
+                    <div class="text-warning mb-1">
+                        {% for i in range(review.rating) %}★{% endfor %}
+                    </div>
+                    {% if review.comment %}
+                    <p class="mb-0">{{ review.comment }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

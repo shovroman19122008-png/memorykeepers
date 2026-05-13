@@ -1,0 +1,191 @@
+{% extends "baza.html" %}
+{% block title %}Минутка — сохрани свои воспоминания{% endblock %}
+
+{% block body %}
+<!-- Hero секция -->
+<section class="hero-section text-center p-5 mb-5">
+    <div class="container">
+        <h1 class="display-3 fw-bold mb-3">Сохраните тёплые моменты</h1>
+        <p class="lead fs-4 mb-4 opacity-90">
+            Найдите мастера, который превратит ваши воспоминания в произведения искусства
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{{ url_for('masters_list') }}" class="btn btn-light btn-lg px-4 fw-bold" style="border-radius: 30px;">
+                <i class="bi bi-search me-2"></i>Найти мастера
+            </a>
+            {% if session.get('user_id') and session.get('role') == 'master' %}
+            <a href="{{ url_for('edit_profile') }}" class="btn btn-outline-light btn-lg px-4">
+                <i class="bi bi-pencil me-2"></i>Редактировать профиль
+            </a>
+            {% elif not session.get('user_id') %}
+            <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-lg px-4">
+                <i class="bi bi-person-plus me-2"></i>Стать мастером
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Категории услуг -->
+<section class="mb-5">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold" style="color: var(--warm-dark);">Что мы можем сохранить</h2>
+        <p class="text-muted">Выберите категорию и найдите идеального мастера</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-3 col-6">
+            <a href="{{ url_for('masters_list', category=1) }}" class="text-decoration-none">
+                <div class="card text-center p-4">
+                    <div class="card-body">
+                        <div class="display-4 mb-3">🎨</div>
+                        <h5>Картины</h5>
+                        <p class="text-muted small">Портреты и пейзажи</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3 col-6">
+            <a href="{{ url_for('masters_list', category=2) }}" class="text-decoration-none">
+                <div class="card text-center p-4">
+                    <div class="card-body">
+                        <div class="display-4 mb-3">🗿</div>
+                        <h5>Скульптуры</h5>
+                        <p class="text-muted small">Объёмное искусство</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3 col-6">
+            <a href="{{ url_for('masters_list', category=3) }}" class="text-decoration-none">
+                <div class="card text-center p-4">
+                    <div class="card-body">
+                        <div class="display-4 mb-3">📚</div>
+                        <h5>Фотокниги</h5>
+                        <p class="text-muted small">Истории в снимках</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3 col-6">
+            <a href="{{ url_for('masters_list', category=4) }}" class="text-decoration-none">
+                <div class="card text-center p-4">
+                    <div class="card-body">
+                        <div class="display-4 mb-3">🎬</div>
+                        <h5>Видео</h5>
+                        <p class="text-muted small">Ожившие моменты</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Топ мастера -->
+{% if masters %}
+<section class="mb-5">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold" style="color: var(--warm-dark);">Лучшие мастера</h2>
+        <p class="text-muted">Проверенные специалисты с высоким рейтингом</p>
+    </div>
+
+    <div class="row g-4">
+        {% for master in masters[:3] %}
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <div class="d-inline-block p-3 rounded-circle" style="background: var(--warm-beige);">
+                            <i class="bi bi-person-fill fs-1" style="color: var(--warm-brown);"></i>
+                        </div>
+                    </div>
+                    <h5 class="card-title">{{ master.username }}</h5>
+                    <p class="text-muted mb-2">
+                        <i class="bi bi-geo-alt-fill me-1"></i>{{ master.city or 'Не указан' }}
+                    </p>
+                    <div class="mb-2">
+                        {% if master.rating > 0 %}
+                            <span style="color: var(--warm-honey);">
+                                {% for i in range(master.rating|int) %}★{% endfor %}
+                                {% if master.rating % 1 >= 0.5 %}★{% endif %}
+                            </span>
+                            <small class="text-muted">{{ master.rating }}/5</small>
+                        {% else %}
+                            <small class="text-muted">Новый мастер</small>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {% for mc in master.master_categories[:2] %}
+                        <span class="badge" style="background: var(--warm-olive);">{{ mc.category.name }}</span>
+                        {% endfor %}
+                    </div>
+                    <a href="{{ url_for('profile', user_id=master.id) }}" class="btn btn-warning">
+                        <i class="bi bi-person me-1"></i>Профиль
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="{{ url_for('masters_list') }}" class="btn btn-outline-dark btn-lg">
+            <i class="bi bi-people me-2"></i>Все мастера
+        </a>
+    </div>
+</section>
+{% endif %}
+
+<!-- Преимущества -->
+<section class="mb-5">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold" style="color: var(--warm-dark);">Почему выбирают нас</h2>
+        <p class="text-muted">Мы делаем процесс простым и приятным</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card text-center p-4 h-100">
+                <div class="card-body">
+                    <div class="display-4 mb-3">🤝</div>
+                    <h5>Прямая связь</h5>
+                    <p class="text-muted">Общайтесь с мастерами напрямую через встроенный чат</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center p-4 h-100">
+                <div class="card-body">
+                    <div class="display-4 mb-3">⭐</div>
+                    <h5>Проверенный рейтинг</h5>
+                    <p class="text-muted">Выбирайте лучших по отзывам реальных заказчиков</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center p-4 h-100">
+                <div class="card-body">
+                    <div class="display-4 mb-3">🔒</div>
+                    <h5>Безопасность</h5>
+                    <p class="text-muted">Отслеживайте статус заказа на каждом этапе</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="text-center p-5 mb-4" style="background: linear-gradient(135deg, var(--warm-beige), var(--warm-peach)); border-radius: 25px;">
+    <h2 class="fw-bold mb-3" style="color: var(--warm-dark);">Готовы сохранить воспоминания?</h2>
+    <p class="lead mb-4 text-muted">Присоединяйтесь к нашему сообществу творческих людей</p>
+    {% if not session.get('user_id') %}
+    <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg px-5">
+        <i class="bi bi-rocket-takeoff me-2"></i>Начать сейчас
+    </a>
+    {% else %}
+    <a href="{{ url_for('masters_list') }}" class="btn btn-warning btn-lg px-5">
+        <i class="bi bi-search-heart me-2"></i>Найти мастера
+    </a>
+    {% endif %}
+</section>
+{% endblock %}

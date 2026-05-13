@@ -1,0 +1,61 @@
+{% extends "baza.html" %}
+{% block title %}Оставить отзыв{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-6">
+        <h2 class="mb-4">Оставить отзыв</h2>
+        
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5>Заказ #{{ order.id }}</h5>
+                <p>Мастер: {{ order.master.username }}</p>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Оценка</label>
+                        <div class="rating-stars">
+                            {% for i in range(5, 0, -1) %}
+                            <input type="radio" name="rating" value="{{ i }}" id="star{{ i }}" class="d-none">
+                            <label for="star{{ i }}" class="star-label fs-3" style="cursor: pointer;">
+                                ★
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">Комментарий (необязательно)</label>
+                        <textarea name="comment" id="comment" class="form-control" rows="4" 
+                                  placeholder="Поделитесь впечатлениями о работе мастера..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-warning btn-lg w-100">Отправить отзыв</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.rating-stars {
+    direction: rtl;
+    display: inline-block;
+}
+.star-label {
+    color: #ddd;
+    transition: color 0.2s;
+}
+.rating-stars input:checked ~ label,
+.rating-stars label:hover,
+.rating-stars label:hover ~ label {
+    color: #ffc107;
+}
+</style>
+{% endblock %}

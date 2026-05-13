@@ -1,0 +1,27 @@
+@import url('base.css');         /* Базовые стили */
+@import url('layout.css');       /* Стили макета */
+@import url('components.css');   /* Стили компонентов */
+@import url('media.css');        /* Медиа-запросы */
+@import url('themes.css');       /* Темы оформления */
+/* base.css */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    line-height: 1.6;
+    color: #333;
+}
+/* themes.css */
+.theme-dark {
+    background: #222;
+    color: #fff;
+}
+
+.theme-light {
+    background: #f9f9f9;
+    color: #333;
+}

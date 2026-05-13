@@ -1,0 +1,91 @@
+{% extends "baza.html" %}
+{% block title %}Редактирование профиля{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+        <h2 class="mb-4">Редактирование профиля</h2>
+        
+        <form method="POST" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5>Основная информация</h5>
+                    
+                    <div class="mb-3">
+                        {{ form.username.label(class="form-label") }}
+                        {{ form.username(class="form-control") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.city.label(class="form-label") }}
+                        {{ form.city(class="form-control") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.about.label(class="form-label") }}
+                        {{ form.about(class="form-control", rows="4") }}
+                    </div>
+                </div>
+            </div>
+            
+            {% if user.role == 'master' %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5>Категории услуг</h5>
+                    <div class="row">
+                        {% for cat in categories %}
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" 
+                                       name="categories" value="{{ cat.id }}" 
+                                       id="cat{{ cat.id }}"
+                                       {% if cat in user.master_categories|map(attribute='category') %}checked{% endif %}>
+                                <label class="form-check-label" for="cat{{ cat.id }}">
+                                    {{ cat.name }}
+                                </label>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5>Портфолио</h5>
+                    
+                    <!-- Текущие фото -->
+                    {% if user.portfolio %}
+                    <div class="row mb-3">
+                        {% for image in user.portfolio %}
+                        <div class="col-md-3 position-relative">
+                            <img src="{{ url_for('static', filename='uploads/' + image.filename) }}" 
+                                 class="img-thumbnail" alt="Фото портфолио">
+                            <form method="POST" action="{{ url_for('delete_portfolio_image', image_id=image.id) }}" 
+                                  class="position-absolute top-0 end-0">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-danger btn-sm">×</button>
+                            </form>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Добавить новые фото</label>
+                        <input type="file" name="portfolio_images" class="form-control" 
+                               multiple accept="image/*">
+                        <small class="text-muted">Можно выбрать несколько файлов</small>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <button type="submit" class="btn btn-warning btn-lg">Сохранить изменения</button>
+            <a href="{{ url_for('profile', user_id=user.id) }}" class="btn btn-outline-secondary btn-lg">Отмена</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

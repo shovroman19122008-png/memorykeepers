@@ -1,0 +1,128 @@
+{% extends "baza.html" %}
+{% block title %}Регистрация в Минутке{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-6 col-lg-5">
+        <!-- Заголовок -->
+        <div class="text-center mb-4">
+            <div class="d-inline-block p-3 rounded-circle mb-3" style="background: var(--warm-beige);">
+                <i class="bi bi-person-plus fs-1" style="color: var(--warm-brown);"></i>
+            </div>
+            <h2 class="fw-bold" style="color: var(--warm-dark);">Присоединяйтесь!</h2>
+            <p class="text-muted">Создайте аккаунт и начните сохранять воспоминания</p>
+        </div>
+
+        <!-- Карточка с формой -->
+        <div class="card shadow-sm p-4">
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('register') }}">
+                    {{ form.hidden_tag() }}
+
+                    <!-- Имя пользователя -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-person me-1" style="color: var(--warm-orange);"></i>
+                            {{ form.username.label.text }}
+                        </label>
+                        {{ form.username(class="form-control", placeholder="Ваше имя") }}
+                        {% for error in form.username.errors %}
+                            <small class="text-danger">{{ error }}</small>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Email -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-envelope me-1" style="color: var(--warm-orange);"></i>
+                            {{ form.email.label.text }}
+                        </label>
+                        {{ form.email(class="form-control", placeholder="email@example.com") }}
+                        {% for error in form.email.errors %}
+                            <small class="text-danger">{{ error }}</small>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Пароль -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-lock me-1" style="color: var(--warm-orange);"></i>
+                            {{ form.password.label.text }}
+                        </label>
+                        {{ form.password(class="form-control", placeholder="Минимум 8 символов") }}
+                        {% for error in form.password.errors %}
+                            <small class="text-danger">{{ error }}</small>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Город -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-geo-alt me-1" style="color: var(--warm-orange);"></i>
+                            {{ form.city.label.text }}
+                        </label>
+                        {{ form.city(class="form-control", placeholder="Ваш город") }}
+                        {% for error in form.city.errors %}
+                            <small class="text-danger">{{ error }}</small>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Выбор роли -->
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="bi bi-person-badge me-1" style="color: var(--warm-orange);"></i>
+                            Я хочу:
+                        </label>
+                        <div class="lever-container">
+                            <div class="lever-switch">
+                                <input type="radio" id="service" name="role" value="master" class="lever-input">
+                                <input type="radio" id="vacancy" name="role" value="customer" class="lever-input" checked>
+
+                                <label for="vacancy" class="lever-label vacancy-label">
+                                    <i class="bi bi-search me-1"></i> Заказывать
+                                </label>
+                                <label for="service" class="lever-label service-label">
+                                    <i class="bi bi-brush me-1"></i> Творить
+                                </label>
+                                <div class="lever-handle"></div>
+                            </div>
+                        </div>
+                        {% for error in form.role.errors %}
+                            <small class="text-danger">{{ error }}</small>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Кнопка -->
+                    <button type="submit" class="btn btn-warning w-100 btn-lg mb-3">
+                        <i class="bi bi-person-plus me-2"></i>Зарегистрироваться
+                    </button>
+                </form>
+
+                <!-- Разделитель -->
+                <div class="text-center mb-3">
+                    <span class="text-muted">или</span>
+                </div>
+
+                <!-- Ссылка на вход -->
+                <div class="text-center">
+                    <p class="text-muted mb-0">
+                        Уже есть аккаунт?
+                        <a href="{{ url_for('login') }}" class="fw-bold" style="color: var(--warm-orange);">
+                            Войти
+                            <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Декоративный элемент -->
+        <div class="text-center mt-4">
+            <p class="text-muted small">
+                <i class="bi bi-heart me-1" style="color: var(--warm-coral);"></i>
+                Присоединяйтесь к сообществу творческих людей
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

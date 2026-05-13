@@ -1,0 +1,119 @@
+{% extends "baza.html" %}
+{% block title %}Заказ #{{ order.id }}{% endblock %}
+
+{% block body %}
+<div class="row mt-4">
+    <div class="col-md-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Заказ #{{ order.id }}</h5>
+                <span>
+                    {% if order.status == 'in_progress' %}
+                        <span class="badge bg-primary">В работе</span>
+                    {% elif order.status == 'completed' %}
+                        <span class="badge bg-success">Завершён</span>
+                    {% elif order.status == 'cancelled' %}
+                        <span class="badge bg-danger">Отменён</span>
+                    {% endif %}
+                </span>
+            </div>
+            
+            <div class="card-body" style="max-height: 500px; overflow-y: auto;" id="chat-messages">
+                {% if messages %}
+                {% for message in messages %}
+                <div class="mb-3 {% if message.sender_id == session.get('user_id') %}text-end{% endif %}">
+                    <div class="d-inline-block p-3 rounded-3 {% if message.sender_id == session.get('user_id') %}bg-warning text-dark{% else %}bg-light{% endif %}" 
+                         style="max-width: 70%;">
+                        <p class="mb-1">{{ message.text }}</p>
+                        <small class="text-muted">
+                            {{ message.timestamp.strftime('%d.%m.%Y %H:%M') }}
+                        </small>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p class="text-muted text-center">Пока нет сообщений</p>
+                {% endif %}
+            </div>
+            
+            {% if order.status == 'in_progress' %}
+            <div class="card-footer">
+                <form method="POST" class="d-flex">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="text" name="message" class="form-control me-2" 
+                           placeholder="Введите сообщение..." required>
+                    <button type="submit" class="btn btn-warning">Отправить</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Информация о собеседнике -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5>{{ other_user.username }}</h5>
+                <p class="text-muted">{{ other_user.city }}</p>
+                <a href="{{ url_for('profile', user_id=other_user.id) }}" 
+                   class="btn btn-outline-warning btn-sm">Профиль</a>
+            </div>
+        </div>
+        
+        <!-- Управление заказом -->
+        {% if order.status == 'in_progress' %}
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h6>Управление заказом</h6>
+                
+                {% if session.get('user_id') == order.master_id %}
+                <form method="POST" action="{{ url_for('update_order_status', order_id=order.id) }}" class="mb-2">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="status" value="completed">
+                    <button type="submit" class="btn btn-success w-100">
+                        Завершить заказ
+                    </button>
+                </form>
+                {% endif %}
+                
+                {% if session.get('user_id') == order.customer_id %}
+                <form method="POST" action="{{ url_for('update_order_status', order_id=order.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="status" value="cancelled">
+                    <button type="submit" class="btn btn-outline-danger w-100" 
+                            onclick="return confirm('Вы уверены, что хотите отменить заказ?')">
+                        Отменить заказ
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Отзыв -->
+        {% if order.status == 'completed' and session.get('user_id') == order.customer_id %}
+            {% if not order.review %}
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6>Оставить отзыв</h6>
+                    <a href="{{ url_for('create_review', order_id=order.id) }}" 
+                       class="btn btn-warning w-100">Написать отзыв</a>
+                </div>
+            </div>
+            {% else %}
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6>Ваш отзыв</h6>
+                    <div class="text-warning mb-1">
+                        {% for i in range(order.review.rating) %}★{% endfor %}
+                    </div>
+                    {% if order.review.comment %}
+                    <p>{{ order.review.comment }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
