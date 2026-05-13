@@ -9,7 +9,8 @@ from wtforms import StringField, PasswordField, SubmitField, SelectField, TextAr
 from wtforms.validators import DataRequired, Email, Length, ValidationError
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your-secret-key-here'
+import os
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-here')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///memories_platform.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
