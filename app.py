@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
-import os
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from flask_wtf import FlaskForm
@@ -608,7 +607,5 @@ def create_review(order_id):
     return render_template('create_review.html', order=order)
 
 
-# --- Запуск ---
-
-# if __name__ == '__main__':
-#     app.run()
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
