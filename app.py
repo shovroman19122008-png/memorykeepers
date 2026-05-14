@@ -610,5 +610,5 @@ def create_review(order_id):
 
 # --- Запуск ---
 
-if __name__ == '__main__':
-    app.run()
+# if __name__ == '__main__':
+#     app.run()
