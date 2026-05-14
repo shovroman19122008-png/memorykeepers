@@ -22,6 +22,39 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 
 # --- Модели ---
+class Order(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    master_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # nullable — мастер назначается позже
+    title = db.Column(db.String(200), nullable=False)  # заголовок заказа
+    description = db.Column(db.Text, nullable=False)  # описание
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)  # категория
+    city = db.Column(db.String(100), nullable=True)  # город заказчика
+    budget = db.Column(db.String(100), nullable=True)  # бюджет (примерно)
+    status = db.Column(db.String(20), default='open')  # open, in_progress, completed, cancelled
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Отношения
+    customer = db.relationship('User', foreign_keys=[customer_id], backref='orders_as_customer')
+    master = db.relationship('User', foreign_keys=[master_id], backref='orders_as_master')
+    messages = db.relationship('Message', backref='order', lazy=True, order_by='Message.timestamp')
+    review = db.relationship('Review', backref='order', uselist=False, lazy=True)
+    category = db.relationship('Category', backref='orders')
+    with app.app_context():
+        db.create_all()
+
+        # Создаём категории, если их нет
+        categories = ['Картины', 'Скульптуры', 'Фотокниги', 'Видео']
+        for cat_name in categories:
+            if not Category.query.filter_by(name=cat_name).first():
+                db.session.add(Category(name=cat_name))
+        db.session.commit()
+
+
+class Category:
+    pass
+
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -54,6 +87,14 @@ class User(db.Model):
             self.rating = 0.0
         db.session.commit()
 
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
+        # заново создаём категории
+        categories = ['Картины', 'Скульптуры', 'Фотокниги', 'Видео']
+        for cat_name in categories:
+            db.session.add(Category(name=cat_name))
+        db.session.commit()
 
 class PortfolioImage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -149,6 +190,103 @@ with app.app_context():
 
 
 # --- Маршруты ---
+@app.route('/orders-board')
+def orders_board():
+    """Доска заказов — видят все"""
+    category_filter = request.args.get('category', type=int)
+    city_filter = request.args.get('city', '').strip()
+
+    query = Order.query.filter(Order.status.in_(['open', 'in_progress']))
+
+    if category_filter:
+        query = query.filter_by(category_id=category_filter)
+
+    if city_filter:
+        query = query.filter(Order.city.ilike(f'%{city_filter}%'))
+
+    orders = query.order_by(Order.created_at.desc()).all()
+    categories = Category.query.all()
+
+    return render_template('orders_board.html',
+                           orders=orders,
+                           categories=categories,
+                           current_category=category_filter,
+                           current_city=city_filter)
+
+
+@app.route('/create-order', methods=['GET', 'POST'])
+def create_order():
+    """Создание заказа заказчиком"""
+    if 'user_id' not in session:
+        flash('Пожалуйста, войдите в систему', 'error')
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        title = request.form.get('title', '').strip()
+        description = request.form.get('description', '').strip()
+        category_id = request.form.get('category_id', type=int)
+        city = request.form.get('city', '').strip()
+        budget = request.form.get('budget', '').strip()
+
+        if not title or not description or not city:
+            flash('Заполните все обязательные поля', 'error')
+            return redirect(url_for('create_order'))
+
+        order = Order(
+            customer_id=session['user_id'],
+            title=title,
+            description=description,
+            category_id=category_id,
+            city=city,
+            budget=budget,
+            status='open'
+        )
+        db.session.add(order)
+        db.session.commit()
+
+        flash('Заказ опубликован! Мастера увидят его на доске заказов', 'success')
+        return redirect(url_for('orders_board'))
+
+    categories = Category.query.all()
+    return render_template('create_order.html', categories=categories)
+
+
+@app.route('/order/<int:order_id>/respond', methods=['POST'])
+def respond_to_order(order_id):
+    """Мастер откликается на заказ"""
+    if 'user_id' not in session:
+        flash('Войдите в систему', 'error')
+        return redirect(url_for('login'))
+
+    user = User.query.get(session['user_id'])
+    if user.role != 'master':
+        flash('Только мастера могут откликаться на заказы', 'error')
+        return redirect(url_for('orders_board'))
+
+    order = Order.query.get_or_404(order_id)
+
+    if order.status != 'open':
+        flash('Этот заказ уже неактуален', 'error')
+        return redirect(url_for('orders_board'))
+
+    # Назначаем мастера и меняем статус
+    order.master_id = session['user_id']
+    order.status = 'in_progress'
+
+    # Создаём первое сообщение в чате
+    message = Message(
+        order_id=order.id,
+        sender_id=session['user_id'],
+        receiver_id=order.customer_id,
+        text=f'Здравствуйте! Я {user.username} из города {user.city}. Готов выполнить ваш заказ: {order.title}',
+        timestamp=datetime.utcnow()
+    )
+    db.session.add(message)
+    db.session.commit()
+
+    flash('Вы откликнулись на заказ! Теперь вы можете общаться с заказчиком', 'success')
+    return redirect(url_for('order_detail', order_id=order.id))
+
 
 @app.route('/')
 def index():
@@ -552,6 +690,34 @@ def update_order_status(order_id):
     flash(f'Заказ {status_text[new_status]}', 'success')
     return redirect(url_for('order_detail', order_id=order_id))
 
+
+@app.route('/register-master', methods=['GET', 'POST'])
+def register_master():
+    """Страница регистрации для мастеров"""
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        if User.query.filter_by(email=form.email.data).first():
+            flash('Этот email уже зарегистрирован', 'error')
+            return redirect(url_for('register_master'))
+
+        user = User(
+            username=form.username.data,
+            email=form.email.data,
+            role='master',  # Принудительно роль мастера
+            city=form.city.data
+        )
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+
+        session['user_id'] = user.id
+        session['username'] = user.username
+        session['role'] = user.role
+
+        flash('Добро пожаловать, творец! Теперь заполните свой профиль', 'success')
+        return redirect(url_for('edit_profile'))
+
+    return render_template('register_master.html', form=form)
 
 @app.route('/register-master', methods=['GET', 'POST'])
 def register_master():

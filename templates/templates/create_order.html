@@ -1,0 +1,157 @@
+{% extends "baza.html" %}
+{% block title %}Стать мастером — Минутка{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-6 col-lg-5">
+        
+        <!-- Заголовок -->
+        <div class="text-center mb-4">
+            <div class="d-inline-block p-3 rounded-circle mb-3" style="background: var(--warm-beige);">
+                <i class="bi bi-brush fs-1" style="color: var(--warm-brown);"></i>
+            </div>
+            <h2 class="fw-bold" style="color: var(--warm-dark);">Станьте творцом!</h2>
+            <p class="text-muted">Присоединяйтесь к сообществу мастеров и находите заказчиков</p>
+        </div>
+        
+        <!-- Карточка с формой -->
+        <div class="card shadow-sm p-4">
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('register') }}">
+                    {{ form.hidden_tag() }}
+                    
+                    <!-- Скрытое поле роли -->
+                    <input type="hidden" name="role" value="master">
+                    
+                    <!-- Имя -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-person me-1" style="color: var(--warm-orange);"></i>
+                            Ваше имя
+                        </label>
+                        {{ form.username(class="form-control", placeholder="Как вас зовут?") }}
+                        {% for error in form.username.errors %}
+                            <small class="text-danger">{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Email -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-envelope me-1" style="color: var(--warm-orange);"></i>
+                            Email
+                        </label>
+                        {{ form.email(class="form-control", placeholder="email@example.com") }}
+                        {% for error in form.email.errors %}
+                            <small class="text-danger">{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Пароль -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-lock me-1" style="color: var(--warm-orange);"></i>
+                            Пароль
+                        </label>
+                        {{ form.password(class="form-control", placeholder="Минимум 8 символов") }}
+                        {% for error in form.password.errors %}
+                            <small class="text-danger">{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Город -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-geo-alt me-1" style="color: var(--warm-orange);"></i>
+                            Город
+                        </label>
+                        {{ form.city(class="form-control", placeholder="Где вы находитесь?") }}
+                        {% for error in form.city.errors %}
+                            <small class="text-danger">{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Категории (предварительный выбор) -->
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="bi bi-palette me-1" style="color: var(--warm-orange);"></i>
+                            Что вы создаёте?
+                        </label>
+                        <small class="text-muted d-block mb-2">Вы сможете выбрать категории после регистрации в профиле</small>
+                        <div class="row">
+                            <div class="col-6 mb-2">
+                                <span class="badge w-100 py-2" style="background: var(--warm-peach); color: var(--warm-dark);">🎨 Картины</span>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <span class="badge w-100 py-2" style="background: var(--warm-peach); color: var(--warm-dark);">🗿 Скульптуры</span>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <span class="badge w-100 py-2" style="background: var(--warm-peach); color: var(--warm-dark);">📚 Фотокниги</span>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <span class="badge w-100 py-2" style="background: var(--warm-peach); color: var(--warm-dark);">🎬 Видео</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Кнопка -->
+                    <button type="submit" class="btn btn-warning w-100 btn-lg mb-3">
+                        <i class="bi bi-rocket-takeoff me-2"></i>Начать творить!
+                    </button>
+                </form>
+                
+                <!-- Разделитель -->
+                <div class="text-center mb-3">
+                    <span class="text-muted">или</span>
+                </div>
+                
+                <!-- Ссылки -->
+                <div class="text-center">
+                    <p class="text-muted mb-1">
+                        Хотите заказывать услуги?
+                        <a href="{{ url_for('register') }}" class="fw-bold" style="color: var(--warm-orange);">
+                            Регистрация заказчика
+                            <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </p>
+                    <p class="text-muted mb-0">
+                        Уже есть аккаунт?
+                        <a href="{{ url_for('login') }}" class="fw-bold" style="color: var(--warm-orange);">
+                            Войти
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Преимущества -->
+        <div class="row mt-4 g-3">
+            <div class="col-4">
+                <div class="card p-2 text-center h-100">
+                    <div class="card-body">
+                        <div class="fs-3 mb-1">📸</div>
+                        <small class="text-muted">Портфолио</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="card p-2 text-center h-100">
+                    <div class="card-body">
+                        <div class="fs-3 mb-1">💬</div>
+                        <small class="text-muted">Чат с заказчиком</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="card p-2 text-center h-100">
+                    <div class="card-body">
+                        <div class="fs-3 mb-1">⭐</div>
+                        <small class="text-muted">Рейтинг</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

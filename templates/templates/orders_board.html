@@ -1,0 +1,114 @@
+{% extends "baza.html" %}
+{% block title %}Доска заказов — Минутка{% endblock %}
+
+{% block body %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold" style="color: var(--warm-dark);">
+                <i class="bi bi-clipboard-check me-2" style="color: var(--warm-orange);"></i>
+                Доска заказов
+            </h2>
+            {% if session.get('user_id') %}
+            <a href="{{ url_for('create_order') }}" class="btn btn-warning">
+                <i class="bi bi-plus-lg me-1"></i> Создать заказ
+            </a>
+            {% endif %}
+        </div>
+        
+        <!-- Фильтры -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <select name="category" class="form-select">
+                            <option value="">Все категории</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.id }}" {% if current_category == cat.id %}selected{% endif %}>
+                                {{ cat.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" name="city" class="form-control" 
+                               placeholder="Город" value="{{ current_city }}">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-outline-dark w-100">
+                            <i class="bi bi-funnel me-1"></i> Фильтр
+                        </button>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{{ url_for('orders_board') }}" class="btn btn-outline-secondary w-100">
+                            Сбросить
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Список заказов -->
+        {% if orders %}
+        <div class="row g-4">
+            {% for order in orders %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <!-- Статус -->
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="badge bg-{{ 'success' if order.status == 'open' else 'primary' }}">
+                                {{ 'Открыт' if order.status == 'open' else 'В работе' }}
+                            </span>
+                            <small class="text-muted">{{ order.created_at.strftime('%d.%m.%Y') }}</small>
+                        </div>
+                        
+                        <!-- Заголовок -->
+                        <h5 class="card-title">{{ order.title }}</h5>
+                        
+                        <!-- Город -->
+                        <p class="text-muted small mb-2">
+                            <i class="bi bi-geo-alt me-1"></i>{{ order.city }}
+                        </p>
+                        
+                        <!-- Категория -->
+                        {% if order.category %}
+                        <span class="badge mb-2" style="background: var(--warm-olive);">
+                            {{ order.category.name }}
+                        </span>
+                        {% endif %}
+                        
+                        <!-- Бюджет -->
+                        {% if order.budget %}
+                        <p class="mb-2">
+                            <strong style="color: var(--warm-orange);">{{ order.budget }}</strong>
+                        </p>
+                        {% endif %}
+                        
+                        <!-- Описание -->
+                        <p class="card-text text-muted">{{ order.description[:100] }}...</p>
+                        
+                        <!-- Кнопка -->
+                        <a href="{{ url_for('order_detail', order_id=order.id) }}" 
+                           class="btn btn-outline-warning w-100">
+                            Подробнее
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-inbox display-1 text-muted"></i>
+            <h4 class="text-muted mt-3">Нет активных заказов</h4>
+            {% if session.get('user_id') %}
+            <a href="{{ url_for('create_order') }}" class="btn btn-warning mt-2">
+                Создать первый заказ
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
