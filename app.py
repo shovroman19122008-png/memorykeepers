@@ -553,6 +553,34 @@ def update_order_status(order_id):
     return redirect(url_for('order_detail', order_id=order_id))
 
 
+@app.route('/register-master', methods=['GET', 'POST'])
+def register_master():
+    """Страница регистрации для мастеров"""
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        if User.query.filter_by(email=form.email.data).first():
+            flash('Этот email уже зарегистрирован', 'error')
+            return redirect(url_for('register_master'))
+
+        user = User(
+            username=form.username.data,
+            email=form.email.data,
+            role='master',  # Принудительно роль мастера
+            city=form.city.data
+        )
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+
+        session['user_id'] = user.id
+        session['username'] = user.username
+        session['role'] = user.role
+
+        flash('Добро пожаловать, творец! Теперь заполните свой профиль', 'success')
+        return redirect(url_for('edit_profile'))
+
+    return render_template('register_master.html', form=form)
+
 @app.route('/order/<int:order_id>/review', methods=['GET', 'POST'])
 def create_review(order_id):
     """Создание отзыва на мастера"""

@@ -18,8 +18,8 @@
                 <i class="bi bi-pencil me-2"></i>Редактировать профиль
             </a>
             {% elif not session.get('user_id') %}
-            <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-lg px-4">
-                <i class="bi bi-person-plus me-2"></i>Стать мастером
+            <a href="{{ url_for('register_master') }}" class="btn btn-outline-light btn-lg px-4">
+                <i class="bi bi-brush me-2"></i>Стать творцом
             </a>
             {% endif %}
         </div>
